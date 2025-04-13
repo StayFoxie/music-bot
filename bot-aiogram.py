@@ -7,7 +7,6 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 
 bot = Bot(BOT_TOKEN)
 dp = Dispatcher(bot, storage=MemoryStorage())
-# router = Router()
 quizzer = Quizzer()
 user_answers = {}
 
@@ -15,7 +14,6 @@ user_answers = {}
 class UserState(StatesGroup):
     waiting_for_language = State()
     waiting_for_genre = State()
-    #   waiting_for_artist = State()
     request = State()
     get_desired_effect = State()
     if_des_effect_stay_same = State()
@@ -31,7 +29,6 @@ async def start(message: types.Message):
                               '/clear_my_data - очистить данные о предпочтениях')
 
 
-# '/choose_playlist - выбери плейлист для прослушивания \n'
 
 @dp.message_handler(commands='registration')
 async def registration(message: types.Message):
@@ -46,8 +43,6 @@ async def question_language(message: types.Message):
     lang_kb = types.InlineKeyboardMarkup(row_width=2)
     lang_bt1 = types.InlineKeyboardButton('Английский', callback_data='english')
     lang_bt2 = types.InlineKeyboardButton('Русский', callback_data='russian')
-    #    lang_bt3 = types.InlineKeyboardButton('Итальянский', callback_data='italian')
-    #    lang_bt4 = types.InlineKeyboardButton('Корейский', callback_data='korean')
     lang_kb.add(lang_bt1, lang_bt2)
     await bot.send_message(chat_id=message.chat.id,
                            text=language,
@@ -68,18 +63,6 @@ async def question_genre(message: types.Message):
     await bot.send_message(chat_id=message.chat.id,
                            text=genre,
                            reply_markup=genre_kb)
-
-
-'''async def question_artist(message: types.Message):
-    artist = 'Выбери исполнителя, музыку которого ты хочешь послушать'
-    art_kb = types.InlineKeyboardMarkup(row_width=3)
-    art_bt1 = types.InlineKeyboardButton('Stray Kids', callback_data='straykids')
-    art_bt2 = types.InlineKeyboardButton('Xdinary Heroes', callback_data='xdinaryheroes')
-    art_bt3 = types.InlineKeyboardButton('Enhypen', callback_data='enhypen')
-    art_kb.add(art_bt1, art_bt2, art_bt3)
-    await bot.send_message(chat_id=message.chat.id,
-                           text=artist,
-                           reply_markup=art_kb)'''
 
 
 @dp.callback_query_handler(state=UserState.waiting_for_language)
@@ -109,9 +92,6 @@ async def genre_cb(callback: types.CallbackQuery, state: FSMContext):
                                             AnswerSongArtist='')
     else:
         quizzer.answers.update_cell(same_username.row, same_username.col + 2, value=callback.data)
-    #    await question_artist(callback.message)
-    #    await bot.delete_message(callback.message.chat.id, callback.message.message_id)
-    #    await UserState.waiting_for_artist.set()
     await bot.delete_message(callback.message.chat.id, callback.message.message_id - 3)
     await bot.delete_message(callback.message.chat.id, callback.message.message_id)
     await bot.send_message(chat_id=callback.message.chat.id,
@@ -126,19 +106,6 @@ async def genre_cb(callback: types.CallbackQuery, state: FSMContext):
     await bot.send_message(chat_id=callback.message.chat.id,
                            text='Начнём?',
                            reply_markup=start_kb)
-
-
-'''@dp.callback_query_handler(state=UserState.waiting_for_artist)
-async def artist_cb(callback: types.CallbackQuery, state: FSMContext):
-    query = str(callback.from_user.username)
-    username = quizzer.answers.find(query=query)
-    if username is None:
-        quizzer.write_answer_to_result_cell(user_id=callback.from_user.username,
-                                            AnswerSongLanguage='',
-                                            AnswerSongGenre='',
-                                            AnswerSongArtist=callback.data)
-    else:
-        quizzer.answers.update_cell(username.row, username.col + 3, value=callback.data)'''
 
 
 @dp.message_handler(commands='request')
@@ -260,14 +227,6 @@ async def if_des_eff_stay_same(callback: types.CallbackQuery, state: FSMContext)
                                text='Понравилась рекомендация? Оставь отзыв о моей работе! https://forms.gle/JoiWwk7xNLwNWx6k6',
                                disable_web_page_preview=True)
     await state.finish()
-
-
-'''@dp.message_handler(state=UserState.send_recommendation)
-async def send_rcmmndtn(message: types.Message, state: FSMContext):
-    await state.finish()
-    await bot.send_message(message.chat.id, 'Вот песни, которые, как мне кажется, подойдут для твоего настроения')
-    # осталось жоска прописать взаимодействие со списком песен, создать этот список
-    # плюс можно сделать коменду для выбора целого плейлиста по настроению и жанру'''
 
 
 @dp.message_handler(commands='clear_my_data')
